@@ -1,10 +1,11 @@
-import org.gradle.internal.jvm.Jvm
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.dagger.plugin)
 }
 
 android {
@@ -54,6 +55,15 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.retrofit2)
+    implementation(libs.gson)
+    implementation(libs.coroutine.core)
+    implementation(libs.coroutine.android)
+    implementation(libs.converter.gson)
+    implementation(libs.hilt.adnroid)
+    implementation(libs.navigation)
+    implementation(libs.hilt.compose)
+    ksp(libs.hilt.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
