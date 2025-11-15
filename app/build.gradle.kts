@@ -63,6 +63,8 @@ dependencies {
     implementation(libs.hilt.adnroid)
     implementation(libs.navigation)
     implementation(libs.hilt.compose)
+    implementation(libs.foundation)
+    implementation(libs.foundation.layout)
     ksp(libs.hilt.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
