@@ -20,10 +20,6 @@ class SplashViewModel @Inject constructor(
     private val _networkState = MutableStateFlow<NetworkUiState>(NetworkUiState.Loading)
     val networkState = _networkState.asStateFlow()
 
-    init {
-        checkNetwork()
-    }
-
     fun checkNetwork() {
         _networkState.value = NetworkUiState.Loading
 

@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AlertDialog
@@ -22,6 +23,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -34,6 +37,10 @@ import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import com.example.nerkhnaame.R
 import com.example.nerkhnaame.nav.NavScreens
@@ -50,37 +57,52 @@ fun Splash(
 ) {
 
     val uiState by viewModel.networkState.collectAsState()
+    val lifecycleOwner = LocalLifecycleOwner.current
 
-    when (uiState) {
-
-        is NetworkUiState.Success -> {
-            val isConnected = (uiState as NetworkUiState.Success).isConnected
-            if (isConnected) {
-                navController.navigate(NavScreens.Home.route) {
-                    popUpTo(NavScreens.Splash.route) { inclusive = true }
-                }
-            } else {
-                PanelNetworkError(
-                    "اتصال نداشتن به اینترنت",
-                    "اتصال به اینترنت ناموفق بود برای روشن کردن اینترنت روی دکمه تنظیمات کلیک کنید.",
-                    onDismiss = {},
-                    onRetry = {
-                        viewModel.checkNetwork()
-                    },
-                    context
-                )
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver{_, event ->
+            if (event == Lifecycle.Event.ON_RESUME){
+                viewModel.checkNetwork()
             }
-
         }
-
-        is NetworkUiState.Error -> {
-            val errorMessage = (uiState as NetworkUiState.Error).message
-            Log.e("Tag_Err_Network", errorMessage)
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
         }
-
-        else -> {}
     }
 
+    LaunchedEffect(uiState) {
+        when (uiState) {
+
+            is NetworkUiState.Success -> {
+                val isConnected = (uiState as NetworkUiState.Success).isConnected
+                if (isConnected) {
+                    navController.navigate(NavScreens.Home.route) {
+                        popUpTo(NavScreens.Splash.route) { inclusive = true }
+                    }
+                }
+            }
+
+            is NetworkUiState.Error -> {
+                val errorMessage = (uiState as NetworkUiState.Error).message
+                Log.e("Tag_Err_Network", errorMessage)
+            }
+
+            else -> {}
+        }
+    }
+
+    if (uiState is NetworkUiState.Success && !(uiState as NetworkUiState.Success).isConnected){
+        PanelNetworkError(
+            "اتصال نداشتن به اینترنت",
+            "اتصال به اینترنت ناموفق بود برای روشن کردن اینترنت روی دکمه تنظیمات کلیک کنید.",
+            onDismiss = {},
+            onRetry = {
+                viewModel.checkNetwork()
+            },
+            context
+        )
+    }
 
 
     Column(
@@ -138,6 +160,7 @@ fun PanelNetworkError(
         onDismissRequest = {
             onDismiss()
         },
+        shape = RoundedCornerShape(12.dp),
         confirmButton = {
             TextButton(
                 onClick = {

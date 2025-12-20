@@ -21,6 +21,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -50,6 +51,7 @@ import com.example.nerkhnaame.data.remote.model.GoldsModel
 import com.example.nerkhnaame.ui.theme.BackViewBlack
 import com.example.nerkhnaame.ui.theme.GoldText
 import com.example.nerkhnaame.ui.theme.WhiteText
+import com.example.nerkhnaame.viewModel.HomeState
 import com.example.nerkhnaame.viewModel.HomeViewModel
 import kotlinx.coroutines.launch
 import java.util.Locale
@@ -59,7 +61,7 @@ fun Home(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
 
-    val golds by viewModel.golds.collectAsState()
+    val state by viewModel.state.collectAsState()
 
     val pagerState = rememberPagerState(pageCount = { 2 }, initialPage = 1)
     val scope = rememberCoroutineScope()
@@ -177,7 +179,9 @@ fun Home(
         ) {
             when (it) {
                 0 -> {}
-                1 -> { PriceListScreen(golds) }
+                1 -> {
+                    PriceListScreen(state)
+                }
             }
         }
 
@@ -185,20 +189,40 @@ fun Home(
 }
 
 @Composable
-fun PriceListScreen(golds: List<Gold>){
+fun PriceListScreen(state: HomeState) {
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-        contentPadding = PaddingValues(top = 16.dp)
-    ) {
+    if (state.isLoading) {
 
-        items(golds) { goldItem ->
-            ListPriceItem(goldItem)
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = GoldText)
         }
 
+    }else if (state.error != null){
+
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ){
+            CircularProgressIndicator(color = GoldText)
+        }
+
+    } else {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            contentPadding = PaddingValues(top = 16.dp)
+        ) {
+
+            items(state.golds) { goldItem ->
+                ListPriceItem(goldItem)
+            }
+
+        }
     }
 
 }
@@ -207,55 +231,86 @@ fun PriceListScreen(golds: List<Gold>){
 fun ListPriceItem(
     gold: Gold
 ) {
+
+    val cardBackground = Color(0xff1c1b1a)
+    val iconBackground = Color(0xFF454545)
+    val unitColor = Color.LightGray
+
+
+    val icon = if (gold.name_en.contains(
+            "Gold",
+            ignoreCase = true
+        )
+    ) R.drawable.ic_gold else R.drawable.ic_coin
+    val formattedPrice = String.format(Locale.US, "%,d", gold.price)
+
+
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(95.dp)
-            .background(Color(0xff1c1b1a), shape = RoundedCornerShape(20.dp))
-            .padding(horizontal = 10.dp),
+            .height(80.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(cardBackground)
+            .padding(horizontal = 16.dp),
+        contentAlignment = Alignment.Center
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
 
-            val icon = if (gold.name_en.contains("Gold")) R.drawable.ic_gold else R.drawable.ic_coin
-            val formattedPrice = String.format(Locale.US, "%,d", gold.price)
 
             Image(
                 painter = painterResource(icon),
                 contentDescription = gold.name_en,
                 modifier = Modifier
-                    .size(40.dp)
+                    .size(50.dp)
                     .clip(CircleShape)
-                    .padding(4.dp)
-            )
-
-            Text(
-                text = gold.name,
-                fontSize = 18.sp,
-                color = WhiteText,
-                modifier = Modifier.weight(1f)
+                    .background(iconBackground)
+                    .padding(8.dp)
             )
 
 
-            Text(
-                text = formattedPrice,
-                fontSize = 18.sp,
-                color = WhiteText,
-                modifier = Modifier.padding(start = 10.dp)
-            )
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 16.dp),
+                horizontalAlignment = Alignment.Start,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = gold.name,
+                    fontSize = 18.sp,
+                    color = WhiteText,
+                    fontWeight = FontWeight.SemiBold
+                )
 
-            Text(
-                text = gold.unit,
-                fontSize = 18.sp,
-                color = WhiteText,
-                modifier = Modifier.padding(start = 8.dp)
-            )
+            }
 
+            Row(
+                verticalAlignment = Alignment.Bottom,
+                horizontalArrangement = Arrangement.End
+            ) {
+
+                Text(
+                    text = formattedPrice,
+                    fontSize = 18.sp,
+                    color = GoldText,
+                    fontWeight = FontWeight.ExtraBold
+                )
+
+                Spacer(Modifier.width(4.dp))
+
+                Text(
+                    text = gold.unit,
+                    fontSize = 13.sp,
+                    color = unitColor,
+                    fontWeight = FontWeight.Normal,
+                    modifier = Modifier.padding(bottom = 1.dp)
+                )
+            }
         }
     }
 }

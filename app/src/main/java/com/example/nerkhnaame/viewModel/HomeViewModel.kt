@@ -14,10 +14,10 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val repo: GoldsRepo
-): ViewModel() {
+) : ViewModel() {
 
-    private val _golds = MutableStateFlow(emptyList<Gold>())
-    val golds = _golds.asStateFlow()
+    private val _state = MutableStateFlow(HomeState(isLoading = true))
+    val state = _state.asStateFlow()
 
 
     init {
@@ -25,14 +25,30 @@ class HomeViewModel @Inject constructor(
     }
 
 
-    fun getGolds(){
+    fun getGolds() {
         viewModelScope.launch(Dispatchers.IO) {
 
             repo.getGoldsPrice("BfTYbSljKInixBiTv46G6fffvp9DdhGe")
                 .onSuccess { gold ->
-                    _golds.value = gold.gold
+                    _state.value = _state.value.copy(
+                        isLoading = false,
+                        golds = gold.gold,
+                        error = null
+                    )
+                }
+                .onFailure { error ->
+                    _state.value = _state.value.copy(
+                        isLoading = false,
+                        error = error.message ?: "خطای نامشخصی رخ داده است"
+                    )
                 }
         }
     }
 
 }
+
+data class HomeState(
+    val isLoading: Boolean = false,
+    val golds: List<Gold> = emptyList(),
+    val error: String? = null
+)

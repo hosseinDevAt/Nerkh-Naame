@@ -10,7 +10,7 @@ plugins {
 
 android {
     namespace = "com.example.nerkhnaame"
-    compileSdkVersion("android-36.1")
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.nerkhnaame"
@@ -46,7 +46,8 @@ android {
 }
 
 dependencies {
-
+    implementation(libs.androidx.material.icons.core)
+    implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -55,17 +56,25 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+
+    // Retrofit & Coroutines
     implementation(libs.retrofit2)
     implementation(libs.gson)
     implementation(libs.coroutine.core)
     implementation(libs.coroutine.android)
     implementation(libs.converter.gson)
+
+    //hilt
     implementation(libs.hilt.adnroid)
+    ksp(libs.hilt.compiler)
+
+    // Navigation & Foundation
     implementation(libs.navigation)
     implementation(libs.hilt.compose)
     implementation(libs.foundation)
     implementation(libs.foundation.layout)
-    ksp(libs.hilt.compiler)
+
+    // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
