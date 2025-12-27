@@ -6,6 +6,7 @@ import com.example.nerkhnaame.data.remote.model.Gold
 import com.example.nerkhnaame.repo.GoldsRepo
 import com.example.nerkhnaame.repo.HolidayRepo
 import com.example.nerkhnaame.utils.PersianDate
+import com.example.nerkhnaame.utils.fa
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -51,7 +52,7 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun getTodayDate() {
-        val formatedDate = "${pDate.strWeekDay} ${pDate.day} ${pDate.strMonth} ${pDate.year}"
+        val formatedDate = "${pDate.strWeekDay} ${pDate.day} ${pDate.strMonth} ${pDate.year}".fa()
         _state.value = _state.value.copy(todayDate = formatedDate)
     }
 
