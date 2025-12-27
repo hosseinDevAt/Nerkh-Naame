@@ -82,36 +82,45 @@ fun Home(
                 .clip(RoundedCornerShape(20.dp)),
             contentAlignment = Alignment.Center
         ) {
-
             Image(
                 painter = painterResource(id = R.drawable.back_top_main),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.matchParentSize()
-
             )
 
-            Text(
-                text = state.todayDate,
-                fontSize = 36.sp,
-                color = Color.Black,
+            Column(
                 modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(8.dp),
-                style = TextStyle(
-                    textDirection = TextDirection.Rtl
+                    .fillMaxSize()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = state.todayDate,
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black,
+                    style = TextStyle(
+                        textDirection = TextDirection.Rtl,
+                        textAlign = TextAlign.Center
+                    )
                 )
-            )
 
-            Text(
-                text = "مناسبت",
-                fontSize = 26.sp,
-                color = Color.Black,
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(8.dp)
-            )
-
+                Text(
+                    text = state.holiday,
+                    fontSize = 18.sp,
+                    color = Color.Black.copy(alpha = 0.9f),
+                    fontWeight = FontWeight.Medium,
+                    textAlign = TextAlign.Center,
+                    lineHeight = 24.sp,
+                    maxLines = 3,
+                    modifier = Modifier.fillMaxWidth(),
+                    style = TextStyle(
+                        textDirection = TextDirection.Rtl
+                    )
+                )
+            }
         }
 
         Spacer(Modifier.height(25.dp))

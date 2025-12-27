@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.nerkhnaame.data.remote.model.Gold
 import com.example.nerkhnaame.repo.GoldsRepo
+import com.example.nerkhnaame.repo.HolidayRepo
 import com.example.nerkhnaame.utils.PersianDate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -14,9 +15,11 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val repo: GoldsRepo
+    private val goldsRepo: GoldsRepo,
+    private val holidayRepo: HolidayRepo
 ) : ViewModel() {
 
+    private val pDate = PersianDate()
     private val _state = MutableStateFlow(HomeState(isLoading = true))
     val state = _state.asStateFlow()
 
@@ -24,10 +27,30 @@ class HomeViewModel @Inject constructor(
     init {
         getGolds()
         getTodayDate()
+        getHolidaysByDate()
+    }
+
+    fun getHolidaysByDate(){
+        viewModelScope.launch(Dispatchers.IO) {
+
+            holidayRepo.getHolidays(
+                pDate.year,
+                pDate.month,
+                pDate.day
+            ).onSuccess {
+                _state.value = _state.value.copy(
+                    holiday = if(it.events.isNotEmpty()){
+                        it.events[0].description
+                    } else {
+                        "هیچ مناسبتی برای امروز وجود ندارد"
+                    }
+                )
+            }
+
+        }
     }
 
     private fun getTodayDate() {
-        val pDate = PersianDate()
         val formatedDate = "${pDate.strWeekDay} ${pDate.day} ${pDate.strMonth} ${pDate.year}"
         _state.value = _state.value.copy(todayDate = formatedDate)
     }
@@ -36,7 +59,7 @@ class HomeViewModel @Inject constructor(
     fun getGolds() {
         viewModelScope.launch(Dispatchers.IO) {
 
-            repo.getGoldsPrice("BfTYbSljKInixBiTv46G6fffvp9DdhGe")
+            goldsRepo.getGoldsPrice("BfTYbSljKInixBiTv46G6fffvp9DdhGe")
                 .onSuccess { gold ->
                     _state.value = _state.value.copy(
                         isLoading = false,
@@ -59,5 +82,6 @@ data class HomeState(
     val isLoading: Boolean = false,
     val golds: List<Gold> = emptyList(),
     val error: String? = null,
-    val todayDate: String = ""
+    val todayDate: String = "در حال دریافت تاریخ...",
+    val holiday: String = "در حال دریافت مناسبت..."
 )
