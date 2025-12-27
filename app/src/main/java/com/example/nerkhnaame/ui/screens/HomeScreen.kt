@@ -28,11 +28,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,12 +39,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.nerkhnaame.R
 import com.example.nerkhnaame.data.remote.model.Gold
-import com.example.nerkhnaame.data.remote.model.GoldsModel
 import com.example.nerkhnaame.ui.theme.BackViewBlack
 import com.example.nerkhnaame.ui.theme.GoldText
 import com.example.nerkhnaame.ui.theme.WhiteText
@@ -95,12 +92,15 @@ fun Home(
             )
 
             Text(
-                text = "تاریخ",
+                text = state.todayDate,
                 fontSize = 36.sp,
                 color = Color.Black,
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .padding(8.dp)
+                    .padding(8.dp),
+                style = TextStyle(
+                    textDirection = TextDirection.Rtl
+                )
             )
 
             Text(
@@ -124,7 +124,7 @@ fun Home(
                 .padding(horizontal = 10.dp),
         ) {
 
-            var selectTabIndex by remember { mutableIntStateOf(1) }
+            val selectTabIndex = pagerState.currentPage
 
             Row(
                 modifier = Modifier
@@ -261,23 +261,34 @@ fun ListPriceItem(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
 
+            Row(
+                verticalAlignment = Alignment.Bottom,
+                horizontalArrangement = Arrangement.Start
+            ) {
 
-            Image(
-                painter = painterResource(icon),
-                contentDescription = gold.name_en,
-                modifier = Modifier
-                    .size(50.dp)
-                    .clip(CircleShape)
-                    .background(iconBackground)
-                    .padding(8.dp)
-            )
+                Text(
+                    text = gold.unit,
+                    fontSize = 13.sp,
+                    color = unitColor,
+                    fontWeight = FontWeight.Normal,
+                    modifier = Modifier.padding(bottom = 1.dp)
+                )
 
+                Spacer(Modifier.width(4.dp))
+
+                Text(
+                    text = formattedPrice,
+                    fontSize = 18.sp,
+                    color = GoldText,
+                    fontWeight = FontWeight.ExtraBold
+                )
+            }
 
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .padding(horizontal = 16.dp),
-                horizontalAlignment = Alignment.Start,
+                horizontalAlignment = Alignment.End,
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
@@ -289,28 +300,16 @@ fun ListPriceItem(
 
             }
 
-            Row(
-                verticalAlignment = Alignment.Bottom,
-                horizontalArrangement = Arrangement.End
-            ) {
+            Image(
+                painter = painterResource(icon),
+                contentDescription = gold.name_en,
+                modifier = Modifier
+                    .size(50.dp)
+                    .clip(CircleShape)
+                    .background(iconBackground)
+                    .padding(8.dp)
+            )
 
-                Text(
-                    text = formattedPrice,
-                    fontSize = 18.sp,
-                    color = GoldText,
-                    fontWeight = FontWeight.ExtraBold
-                )
-
-                Spacer(Modifier.width(4.dp))
-
-                Text(
-                    text = gold.unit,
-                    fontSize = 13.sp,
-                    color = unitColor,
-                    fontWeight = FontWeight.Normal,
-                    modifier = Modifier.padding(bottom = 1.dp)
-                )
-            }
         }
     }
 }
@@ -318,6 +317,7 @@ fun ListPriceItem(
 
 @Composable
 fun AnalysisScreen() {
+    //TODO(analysis screen)
 }
 
 @Composable
