@@ -9,8 +9,10 @@ import com.example.nerkhnaame.utils.PersianDate
 import com.example.nerkhnaame.utils.fa
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -59,6 +61,12 @@ class HomeViewModel @Inject constructor(
 
     fun getGolds() {
         viewModelScope.launch(Dispatchers.IO) {
+
+            _state.update {
+                it.copy(isLoading = true)
+            }
+
+            delay(500L)
 
             goldsRepo.getGoldsPrice("BfTYbSljKInixBiTv46G6fffvp9DdhGe")
                 .onSuccess { gold ->

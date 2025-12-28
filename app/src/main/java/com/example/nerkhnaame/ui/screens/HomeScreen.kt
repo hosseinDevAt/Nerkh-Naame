@@ -28,6 +28,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -196,7 +198,13 @@ fun Home(
             when (it) {
                 0 -> {}
                 1 -> {
-                    PriceListScreen(state)
+                    PriceListScreen(
+                        state,
+                        onRefresh = {
+                            viewModel.getGolds()
+                            viewModel.getHolidaysByDate()
+                        }
+                    )
                 }
             }
         }
@@ -205,43 +213,52 @@ fun Home(
 }
 
 @Composable
-fun PriceListScreen(state: HomeState) {
+fun PriceListScreen(
+    state: HomeState,
+    onRefresh: () -> Unit
+) {
 
-    if (state.isLoading) {
+    val statePullToRef = rememberPullToRefreshState()
 
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator(color = GoldText)
-        }
+    PullToRefreshBox(
+        isRefreshing = state.isLoading && state.golds.isNotEmpty(),
+        onRefresh = onRefresh,
+        state = statePullToRef,
+        modifier = Modifier.fillMaxSize()
+    ) {
 
-    }else if (state.error != null){
+        if (state.isLoading && state.golds.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = GoldText)
+            }
+        } else if (state.error != null && state.golds.isEmpty()) {
 
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ){
-            CircularProgressIndicator(color = GoldText)
-        }
-
-    } else {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-            contentPadding = PaddingValues(top = 16.dp)
-        ) {
-
-            itemsIndexed(state.golds) { index ,goldItem ->
-                AnimatedPriceItem(index, goldItem)
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = GoldText)
             }
 
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                contentPadding = PaddingValues(top = 16.dp)
+            ) {
+
+                itemsIndexed(state.golds) { index, goldItem ->
+                    AnimatedPriceItem(index, goldItem)
+                }
+
+            }
         }
     }
 
 }
+
 @Composable
 fun ListPriceItem(
     gold: Gold
