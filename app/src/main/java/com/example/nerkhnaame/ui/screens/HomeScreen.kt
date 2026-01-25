@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -53,9 +52,11 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.nerkhnaame.R
 import com.example.nerkhnaame.data.remote.model.Gold
+import com.example.nerkhnaame.data.remote.model.GoldAnalysisItem
 import com.example.nerkhnaame.ui.theme.BackViewBlack
 import com.example.nerkhnaame.ui.theme.GoldText
 import com.example.nerkhnaame.ui.theme.WhiteText
+import com.example.nerkhnaame.viewModel.AnalysisViewModel
 import com.example.nerkhnaame.viewModel.HomeState
 import com.example.nerkhnaame.viewModel.HomeViewModel
 import kotlinx.coroutines.delay
@@ -64,10 +65,12 @@ import java.util.Locale
 
 @Composable
 fun Home(
-    viewModel: HomeViewModel = hiltViewModel()
+    viewModel: HomeViewModel = hiltViewModel(),
+    analysisViewModel: AnalysisViewModel = hiltViewModel()
 ) {
 
-    val state by viewModel.state.collectAsState()
+    val homeState by viewModel.state.collectAsState()
+    val analysisState by analysisViewModel.state.collectAsState()
 
     val pagerState = rememberPagerState(pageCount = { 2 }, initialPage = 1)
     val scope = rememberCoroutineScope()
@@ -106,7 +109,7 @@ fun Home(
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = state.todayDate,
+                    text = homeState.todayDate,
                     fontSize = 32.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black,
@@ -117,7 +120,7 @@ fun Home(
                 )
 
                 Text(
-                    text = state.holiday,
+                    text = homeState.holiday,
                     fontSize = 18.sp,
                     color = Color.Black.copy(alpha = 0.9f),
                     fontWeight = FontWeight.Medium,
@@ -191,15 +194,20 @@ fun Home(
 
         }
 
+
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.fillMaxSize(),
         ) {
+
             when (it) {
-                0 -> {}
+                0 -> {
+                    AnalysisScreen(analysisState.allItems())
+                }
+
                 1 -> {
                     PriceListScreen(
-                        state,
+                        homeState,
                         onRefresh = {
                             viewModel.getGolds()
                             viewModel.getHolidaysByDate()
@@ -365,8 +373,179 @@ fun AnimatedPriceItem(index: Int, gold: Gold) {
 }
 
 @Composable
-fun AnalysisScreen() {
-    //TODO(analysis screen)
+fun AnalysisScreen(
+    analysisItems: List<GoldAnalysisItem>
+) {
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(top = 16.dp)
+    ) {
+        itemsIndexed(analysisItems) { index, item ->
+            AnimatedVisibilityCard(item = item, index = index) {
+                AnalysisCard(item)
+            }
+        }
+    }
+}
+
+@Composable
+fun AnimatedVisibilityCard(item: GoldAnalysisItem, index: Int, content: @Composable () -> Unit) {
+    val visible = remember { mutableStateOf(false) }
+
+    LaunchedEffect(item) {
+        delay((index + 1) * 100L) // stagger animation
+        visible.value = true
+    }
+
+    AnimatedVisibility(
+        visible = visible.value,
+        enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn()
+    ) {
+        content()
+    }
+
+}
+
+@Composable
+fun AnalysisCard(item: GoldAnalysisItem) {
+    val cardBackground = Color(0xff1c1b1a)
+    val iconBackground = Color(0xFF454545)
+    val adviceColor = when (item.advice.action) {
+        "BUY" -> Color(0xFF27ae60)
+        "SELL" -> Color(0xFFe74c3c)
+        else -> Color(0xFFf1c40f)
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(cardBackground)
+            .padding(16.dp)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+
+            // Header: Title + Icon
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = item.title,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = WhiteText
+                )
+                Image(
+                    painter = painterResource(
+                        id = if (item.title.contains("سکه")) R.drawable.ic_coin else R.drawable.ic_gold
+                    ),
+                    contentDescription = item.title,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(iconBackground)
+                        .padding(8.dp)
+                )
+            }
+
+            // Advice
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(adviceColor.copy(alpha = 0.2f))
+                    .padding(10.dp)
+                    .fillMaxWidth()
+            ) {
+                Column {
+                    Text(
+                        text = item.advice.title,
+                        fontWeight = FontWeight.Bold,
+                        color = adviceColor,
+                        fontSize = 16.sp
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = item.advice.description,
+                        fontSize = 14.sp,
+                        color = WhiteText.copy(alpha = 0.8f)
+                    )
+                }
+            }
+
+            // Market stats
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "قیمت زمان تحلیل: ${item.market_stats?.current_price}",
+                    color = WhiteText,
+                    fontSize = 14.sp
+                )
+                Text(
+                    text = "تغییر: ${item.market_stats?.change_percent}",
+                    color = adviceColor,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 14.sp,
+                )
+            }
+
+            // Chart mini line
+            if (item.chart_points.isNotEmpty()) {
+                MiniLineChart(
+                    points = item.chart_points,
+                    lineColor = GoldText
+                )
+            }
+
+        }
+    }
+}
+
+@Composable
+fun MiniLineChart(
+    points: List<Long>,
+    lineColor: Color = GoldText
+) {
+    val max = points.maxOrNull()?.toFloat() ?: 1f
+    val min = points.minOrNull()?.toFloat() ?: 0f
+    val diff = max - min
+
+    androidx.compose.foundation.Canvas(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(80.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(Color(0xFF262523))
+    ) {
+        if (points.size < 2) return@Canvas
+
+        val stepX = size.width / (points.size - 1)
+        val scaleY = if (diff != 0f) size.height / diff else 1f
+
+        for (i in 0 until points.size - 1) {
+            val startX = i * stepX
+            val startY = size.height - (points[i] - min) * scaleY
+            val stopX = (i + 1) * stepX
+            val stopY = size.height - (points[i + 1] - min) * scaleY
+
+            drawLine(
+                color = lineColor,
+                start = androidx.compose.ui.geometry.Offset(startX, startY),
+                end = androidx.compose.ui.geometry.Offset(stopX, stopY),
+                strokeWidth = 4f
+            )
+        }
+    }
 }
 
 @Composable

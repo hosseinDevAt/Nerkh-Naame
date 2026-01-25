@@ -10,3 +10,7 @@ annotation class GoldsApi
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 annotation class HolidayApi
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class GoldAnalyze
