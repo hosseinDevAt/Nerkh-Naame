@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -56,6 +57,7 @@ import com.example.nerkhnaame.data.remote.model.GoldAnalysisItem
 import com.example.nerkhnaame.ui.theme.BackViewBlack
 import com.example.nerkhnaame.ui.theme.GoldText
 import com.example.nerkhnaame.ui.theme.WhiteText
+import com.example.nerkhnaame.viewModel.AnalysisState
 import com.example.nerkhnaame.viewModel.AnalysisViewModel
 import com.example.nerkhnaame.viewModel.HomeState
 import com.example.nerkhnaame.viewModel.HomeViewModel
@@ -74,9 +76,6 @@ fun Home(
 
     val pagerState = rememberPagerState(pageCount = { 2 }, initialPage = 1)
     val scope = rememberCoroutineScope()
-    val currentPage by remember {
-        derivedStateOf { pagerState.currentPage }
-    }
 
     Column(
         modifier = Modifier
@@ -202,7 +201,13 @@ fun Home(
 
             when (it) {
                 0 -> {
-                    AnalysisScreen(analysisState.allItems())
+                    AnalysisScreen(
+                        analysisItems = analysisState.allItems(),
+                        state = analysisState,
+                        onRefresh = {
+                            analysisViewModel.fetchAnalysis()
+                        }
+                    )
                 }
 
                 1 -> {
@@ -257,8 +262,8 @@ fun PriceListScreen(
                 contentPadding = PaddingValues(top = 16.dp)
             ) {
 
-                itemsIndexed(state.golds) { index, goldItem ->
-                    AnimatedPriceItem(index, goldItem)
+                items(state.golds) {
+                    ListPriceItem(it)
                 }
 
             }
@@ -269,13 +274,11 @@ fun PriceListScreen(
 
 @Composable
 fun ListPriceItem(
-    gold: Gold
+    gold: Gold,
 ) {
-
     val cardBackground = Color(0xff1c1b1a)
     val iconBackground = Color(0xFF454545)
     val unitColor = Color.LightGray
-
 
     val icon = if (gold.name_en.contains(
             "Gold",
@@ -354,60 +357,53 @@ fun ListPriceItem(
     }
 }
 
-@Composable
-fun AnimatedPriceItem(index: Int, gold: Gold) {
-    val visible = remember { mutableStateOf(false) }
-
-    LaunchedEffect(Unit) {
-        delay(index * 50L)
-        visible.value = true
-    }
-
-    AnimatedVisibility(
-        visible = visible.value,
-        enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        ListPriceItem(gold)
-    }
-}
 
 @Composable
 fun AnalysisScreen(
-    analysisItems: List<GoldAnalysisItem>
+    analysisItems: List<GoldAnalysisItem>,
+    state: AnalysisState,
+    onRefresh: () -> Unit
 ) {
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        contentPadding = PaddingValues(top = 16.dp)
+    val statePullToRef = rememberPullToRefreshState()
+
+    PullToRefreshBox(
+        isRefreshing = state.isLoading && state.allItems().isNotEmpty(),
+        onRefresh = {
+            onRefresh()
+        },
+        state = statePullToRef,
+        modifier = Modifier.fillMaxSize()
     ) {
-        itemsIndexed(analysisItems) { index, item ->
-            AnimatedVisibilityCard(item = item, index = index) {
-                AnalysisCard(item)
+
+        if (state.isLoading && state.allItems().isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = GoldText)
+            }
+        } else if (state.error != null && state.allItems().isEmpty()) {
+
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = GoldText)
+            }
+
+        } else {
+
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                contentPadding = PaddingValues(top = 16.dp)
+            ) {
+                itemsIndexed(analysisItems) { index, item ->
+                    AnalysisCard(item)
+                }
             }
         }
     }
-}
-
-@Composable
-fun AnimatedVisibilityCard(item: GoldAnalysisItem, index: Int, content: @Composable () -> Unit) {
-    val visible = remember { mutableStateOf(false) }
-
-    LaunchedEffect(item) {
-        delay((index + 1) * 100L) // stagger animation
-        visible.value = true
-    }
-
-    AnimatedVisibility(
-        visible = visible.value,
-        enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn()
-    ) {
-        content()
-    }
-
 }
 
 @Composable
