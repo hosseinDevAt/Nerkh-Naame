@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.nerkhnaame.data.remote.model.Gold
 import com.example.nerkhnaame.repo.GoldsRepo
-import com.example.nerkhnaame.repo.HolidayRepo
 import com.example.nerkhnaame.utils.PersianDate
 import com.example.nerkhnaame.utils.fa
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,7 +18,6 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val goldsRepo: GoldsRepo,
-    private val holidayRepo: HolidayRepo
 ) : ViewModel() {
 
     private val pDate = PersianDate()
@@ -30,27 +28,6 @@ class HomeViewModel @Inject constructor(
     init {
         getGolds()
         getTodayDate()
-        getHolidaysByDate()
-    }
-
-    fun getHolidaysByDate(){
-        viewModelScope.launch(Dispatchers.IO) {
-
-            holidayRepo.getHolidays(
-                pDate.year,
-                pDate.month,
-                pDate.day
-            ).onSuccess {
-                _state.value = _state.value.copy(
-                    holiday = if(it.events.isNotEmpty()){
-                        it.events[0].description
-                    } else {
-                        "هیچ مناسبتی برای امروز وجود ندارد"
-                    }
-                )
-            }
-
-        }
     }
 
     private fun getTodayDate() {
@@ -92,5 +69,4 @@ data class HomeState(
     val golds: List<Gold> = emptyList(),
     val error: String? = null,
     val todayDate: String = "در حال دریافت تاریخ...",
-    val holiday: String = "در حال دریافت مناسبت..."
 )

@@ -2,10 +2,8 @@ package com.example.nerkhnaame.di.module
 
 import com.example.nerkhnaame.data.remote.apiService.GoldAnalyzeApiService
 import com.example.nerkhnaame.data.remote.apiService.GoldsApiService
-import com.example.nerkhnaame.data.remote.apiService.HolidayApiService
 import com.example.nerkhnaame.di.utils.GoldAnalyze
 import com.example.nerkhnaame.di.utils.GoldsApi
-import com.example.nerkhnaame.di.utils.HolidayApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -41,17 +39,6 @@ object ApiHandler {
 
 
     @Singleton
-    @HolidayApi
-    @Provides
-    fun provideHolidayRetrofit(client: OkHttpClient): Retrofit =
-        Retrofit.Builder()
-            .client(client)
-            .baseUrl("https://holidayapi.ir/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-
-
-    @Singleton
     @GoldAnalyze
     @Provides
     fun provideGoldAnalyzeRetrofit(client: OkHttpClient): Retrofit =
@@ -67,11 +54,6 @@ object ApiHandler {
     fun provideGoldApiService(@GoldsApi retrofit: Retrofit): GoldsApiService =
         retrofit.create(GoldsApiService::class.java)
 
-
-    @Singleton
-    @Provides
-    fun provideHolidayApiService(@HolidayApi retrofit: Retrofit): HolidayApiService =
-        retrofit.create(HolidayApiService::class.java)
 
     @Singleton
     @Provides

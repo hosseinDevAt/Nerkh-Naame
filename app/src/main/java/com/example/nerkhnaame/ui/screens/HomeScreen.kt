@@ -105,7 +105,7 @@ fun Home(
                     .fillMaxSize()
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.SpaceBetween
+                verticalArrangement = Arrangement.Center
             ) {
                 Text(
                     text = homeState.todayDate,
@@ -115,20 +115,6 @@ fun Home(
                     style = TextStyle(
                         textDirection = TextDirection.Rtl,
                         textAlign = TextAlign.Center
-                    )
-                )
-
-                Text(
-                    text = homeState.holiday,
-                    fontSize = 18.sp,
-                    color = Color.Black.copy(alpha = 0.9f),
-                    fontWeight = FontWeight.Medium,
-                    textAlign = TextAlign.Center,
-                    lineHeight = 24.sp,
-                    maxLines = 3,
-                    modifier = Modifier.fillMaxWidth(),
-                    style = TextStyle(
-                        textDirection = TextDirection.Rtl
                     )
                 )
             }
@@ -215,7 +201,6 @@ fun Home(
                         homeState,
                         onRefresh = {
                             viewModel.getGolds()
-                            viewModel.getHolidaysByDate()
                         }
                     )
                 }
