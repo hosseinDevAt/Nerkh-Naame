@@ -1,6 +1,5 @@
 package com.example.nerkhnaame.viewModel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.nerkhnaame.data.remote.model.GoldAnalysisItem

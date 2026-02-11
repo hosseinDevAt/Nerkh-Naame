@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">نرخ نامه</string>
+
+    <!-- Home -->
+    <string name="tab_analysis">تحلیل خرید یا فروش</string>
+    <string name="tab_price">قیمت طلا و سکه</string>
+
+    <!-- Errors -->
+    <string name="error_fetch_data">خطا در دریافت اطلاعات</string>
+    <string name="error_text_btn">تلاش مجدد</string>
+
 </resources>

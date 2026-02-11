@@ -1,17 +1,13 @@
 package com.example.nerkhnaame.ui.screens
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.slideInVertically
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -25,25 +21,27 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -61,17 +59,17 @@ import com.example.nerkhnaame.viewModel.AnalysisState
 import com.example.nerkhnaame.viewModel.AnalysisViewModel
 import com.example.nerkhnaame.viewModel.HomeState
 import com.example.nerkhnaame.viewModel.HomeViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.Locale
 
+
 @Composable
 fun Home(
-    viewModel: HomeViewModel = hiltViewModel(),
+    homeViewModel: HomeViewModel = hiltViewModel(),
     analysisViewModel: AnalysisViewModel = hiltViewModel()
 ) {
 
-    val homeState by viewModel.state.collectAsState()
+    val homeState by homeViewModel.state.collectAsState()
     val analysisState by analysisViewModel.state.collectAsState()
 
     val pagerState = rememberPagerState(pageCount = { 2 }, initialPage = 1)
@@ -81,18 +79,19 @@ fun Home(
         modifier = Modifier
             .fillMaxSize()
             .background(BackViewBlack)
-            .padding(10.dp),
+            .padding(horizontal = 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(180.dp)
-                .padding(10.dp)
+                .height(170.dp)
+                .padding(top = 10.dp)
                 .clip(RoundedCornerShape(20.dp)),
             contentAlignment = Alignment.Center
         ) {
+
             Image(
                 painter = painterResource(id = R.drawable.back_top_main),
                 contentDescription = null,
@@ -100,249 +99,200 @@ fun Home(
                 modifier = Modifier.matchParentSize()
             )
 
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = homeState.todayDate,
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black,
-                    style = TextStyle(
-                        textDirection = TextDirection.Rtl,
-                        textAlign = TextAlign.Center
-                    )
+            Text(
+                text = homeState.todayDate,
+                fontSize = 30.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black,
+                style = TextStyle(
+                    textDirection = TextDirection.Rtl,
+                    textAlign = TextAlign.Center
                 )
-            }
+            )
         }
 
-        Spacer(Modifier.height(25.dp))
+        Spacer(Modifier.height(18.dp))
 
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(85.dp)
-                .background(Color(0xff262523), shape = RoundedCornerShape(20.dp))
+                .height(80.dp)
+                .background(Color(0xff262523), RoundedCornerShape(20.dp))
                 .padding(horizontal = 10.dp),
+            contentAlignment = Alignment.Center
         ) {
 
-            val selectTabIndex = pagerState.currentPage
-
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(12.dp)
-                    .clip(RoundedCornerShape(18.dp)),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
 
                 CategoryButton(
-                    text = "تحلیل خرید یا فروش",
-                    isSelected = selectTabIndex == 0,
+                    text = stringResource(R.string.tab_analysis),
+                    isSelected = pagerState.currentPage == 0,
                     modifier = Modifier.weight(1f),
                     onClick = {
-                        scope.launch {
-                            pagerState.animateScrollToPage(0)
-                        }
+                        scope.launch { pagerState.animateScrollToPage(0) }
                     }
                 )
 
-                Spacer(Modifier.width(15.dp))
+                Spacer(Modifier.width(10.dp))
 
                 Box(
                     modifier = Modifier
-                        .fillMaxHeight()
-                        .height(22.dp)
+                        .height(25.dp)
                         .width(2.dp)
-                        .background(Color.White, shape = RoundedCornerShape(12.dp))
+                        .background(Color.White, RoundedCornerShape(12.dp))
                 )
 
-                Spacer(Modifier.width(15.dp))
+                Spacer(Modifier.width(10.dp))
 
                 CategoryButton(
-                    text = "قیمت طلا و سکه",
-                    isSelected = selectTabIndex == 1,
+                    text = stringResource(R.string.tab_price),
+                    isSelected = pagerState.currentPage == 1,
                     modifier = Modifier.weight(1f),
                     onClick = {
-                        scope.launch {
-                            pagerState.animateScrollToPage(1)
-                        }
+                        scope.launch { pagerState.animateScrollToPage(1) }
                     }
                 )
-
             }
-
         }
 
+        Spacer(Modifier.height(10.dp))
 
         HorizontalPager(
             state = pagerState,
-            modifier = Modifier.fillMaxSize(),
-        ) {
+            modifier = Modifier.fillMaxSize()
+        ) { page ->
 
-            when (it) {
-                0 -> {
-                    AnalysisScreen(
-                        analysisItems = analysisState.allItems(),
-                        state = analysisState,
-                        onRefresh = {
-                            analysisViewModel.fetchAnalysis()
-                        }
-                    )
-                }
+            when (page) {
 
-                1 -> {
-                    PriceListScreen(
-                        homeState,
-                        onRefresh = {
-                            viewModel.getGolds()
-                        }
-                    )
-                }
+                0 -> AnalysisScreen(
+                    state = analysisState,
+                    analysisItems = analysisState.allItems(),
+                    onRefresh = { analysisViewModel.fetchAnalysis() }
+                )
+
+                1 -> PriceListScreen(
+                    state = homeState,
+                    onRefresh = { homeViewModel.getGolds() }
+                )
             }
         }
-
     }
 }
 
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PriceListScreen(
     state: HomeState,
     onRefresh: () -> Unit
 ) {
 
-    val statePullToRef = rememberPullToRefreshState()
+    val pullState = rememberPullToRefreshState()
 
     PullToRefreshBox(
-        isRefreshing = state.isLoading && state.golds.isNotEmpty(),
+        isRefreshing = state.isLoading,
         onRefresh = onRefresh,
-        state = statePullToRef,
+        state = pullState,
         modifier = Modifier.fillMaxSize()
     ) {
 
-        if (state.isLoading && state.golds.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = GoldText)
-            }
-        } else if (state.error != null && state.golds.isEmpty()) {
+        when {
 
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator(color = GoldText)
+            state.isLoading && state.golds.isEmpty() -> {
+                LoadingView()
             }
 
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                contentPadding = PaddingValues(top = 16.dp)
-            ) {
+            state.error != null && state.golds.isEmpty() -> {
+                ErrorView(onRetry = onRefresh)
+            }
 
-                items(state.golds) {
-                    ListPriceItem(it)
+            else -> {
+                LazyColumn(
+                    modifier = Modifier.padding(14.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    items(state.golds) {
+                        ListPriceItem(it)
+                    }
                 }
-
             }
         }
     }
-
 }
 
 @Composable
-fun ListPriceItem(
-    gold: Gold,
-) {
-    val cardBackground = Color(0xff1c1b1a)
-    val iconBackground = Color(0xFF454545)
-    val unitColor = Color.LightGray
+fun ListPriceItem(gold: Gold) {
 
-    val icon = if (gold.name_en.contains(
-            "Gold",
-            ignoreCase = true
-        )
-    ) R.drawable.ic_gold else R.drawable.ic_coin
-    val formattedPrice = String.format(Locale.US, "%,d", gold.price)
+    val icon =
+        if (gold.name_en.contains("Gold", ignoreCase = true))
+            R.drawable.ic_gold
+        else
+            R.drawable.ic_coin
 
 
+    val formattedPrice = remember(gold.price) {
+        String.format(Locale.US, "%,d", gold.price)
+    }
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(80.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(cardBackground)
+            .height(78.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .background(Color(0xff1c1b1a))
             .padding(horizontal = 16.dp),
         contentAlignment = Alignment.Center
     ) {
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
 
-            Row(
-                verticalAlignment = Alignment.Bottom,
-                horizontalArrangement = Arrangement.Start
-            ) {
+            Row(verticalAlignment = Alignment.Bottom) {
 
                 Text(
-                    text = gold.unit,
+                    text = gold.unit ?: "",
                     fontSize = 13.sp,
-                    color = unitColor,
-                    fontWeight = FontWeight.Normal,
-                    modifier = Modifier.padding(bottom = 1.dp)
+                    color = Color.LightGray
                 )
 
-                Spacer(Modifier.width(4.dp))
+                Spacer(Modifier.width(6.dp))
 
                 Text(
                     text = formattedPrice,
                     fontSize = 18.sp,
                     color = GoldText,
-                    fontWeight = FontWeight.ExtraBold
+                    fontWeight = FontWeight.Bold
                 )
             }
 
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = 16.dp),
-                horizontalAlignment = Alignment.End,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = gold.name,
-                    fontSize = 18.sp,
-                    color = WhiteText,
-                    fontWeight = FontWeight.SemiBold
-                )
-
-            }
+            Text(
+                text = gold.name ?: "",
+                fontSize = 17.sp,
+                color = WhiteText,
+                fontWeight = FontWeight.SemiBold
+            )
 
             Image(
                 painter = painterResource(icon),
-                contentDescription = gold.name_en,
+                contentDescription = gold.name,
                 modifier = Modifier
-                    .size(50.dp)
+                    .size(48.dp)
                     .clip(CircleShape)
-                    .background(iconBackground)
+                    .background(Color(0xFF454545))
                     .padding(8.dp)
             )
-
         }
     }
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AnalysisScreen(
     analysisItems: List<GoldAnalysisItem>,
@@ -350,41 +300,33 @@ fun AnalysisScreen(
     onRefresh: () -> Unit
 ) {
 
-    val statePullToRef = rememberPullToRefreshState()
+    val pullState = rememberPullToRefreshState()
 
     PullToRefreshBox(
-        isRefreshing = state.isLoading && state.allItems().isNotEmpty(),
-        onRefresh = {
-            onRefresh()
-        },
-        state = statePullToRef,
+        isRefreshing = state.isLoading,
+        onRefresh = onRefresh,
+        state = pullState,
         modifier = Modifier.fillMaxSize()
     ) {
 
-        if (state.isLoading && state.allItems().isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = GoldText)
-            }
-        } else if (state.error != null && state.allItems().isEmpty()) {
+        when {
 
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator(color = GoldText)
+            state.isLoading && analysisItems.isEmpty() -> {
+                LoadingView()
             }
 
-        } else {
+            state.error != null && analysisItems.isEmpty() -> {
+                ErrorView(onRetry = onRefresh)
+            }
 
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                contentPadding = PaddingValues(top = 16.dp)
-            ) {
-                itemsIndexed(analysisItems) { index, item ->
-                    AnalysisCard(item)
+            else -> {
+                LazyColumn(
+                    modifier = Modifier.padding(14.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    itemsIndexed(analysisItems) { _, item ->
+                        AnalysisCard(item)
+                    }
                 }
             }
         }
@@ -393,8 +335,7 @@ fun AnalysisScreen(
 
 @Composable
 fun AnalysisCard(item: GoldAnalysisItem) {
-    val cardBackground = Color(0xff1c1b1a)
-    val iconBackground = Color(0xFF454545)
+
     val adviceColor = when (item.advice.action) {
         "BUY" -> Color(0xFF27ae60)
         "SELL" -> Color(0xFFe74c3c)
@@ -404,127 +345,146 @@ fun AnalysisCard(item: GoldAnalysisItem) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(cardBackground)
+            .clip(RoundedCornerShape(14.dp))
+            .background(Color(0xff1c1b1a))
             .padding(16.dp)
     ) {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
 
-            // Header: Title + Icon
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = item.title,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = WhiteText
-                )
-                Image(
-                    painter = painterResource(
-                        id = if (item.title.contains("سکه")) R.drawable.ic_coin else R.drawable.ic_gold
-                    ),
-                    contentDescription = item.title,
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(iconBackground)
-                        .padding(8.dp)
-                )
-            }
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
 
-            // Advice
+
+            Text(
+                text = item.title ?: "",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = WhiteText
+            )
+
+
             Box(
                 modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(10.dp))
                     .background(adviceColor.copy(alpha = 0.2f))
                     .padding(10.dp)
-                    .fillMaxWidth()
             ) {
+
                 Column {
+
                     Text(
-                        text = item.advice.title,
-                        fontWeight = FontWeight.Bold,
+                        text = item.advice.title ?: "",
                         color = adviceColor,
-                        fontSize = 16.sp
+                        fontWeight = FontWeight.Bold
                     )
-                    Spacer(Modifier.height(4.dp))
+
                     Text(
-                        text = item.advice.description,
-                        fontSize = 14.sp,
-                        color = WhiteText.copy(alpha = 0.8f)
+                        text = item.advice.description ?: "",
+                        color = WhiteText.copy(alpha = 0.8f),
+                        fontSize = 14.sp
                     )
                 }
             }
 
-            // Market stats
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
+
+                val price = item.market_stats?.current_price ?: "نامشخص"
+                val change = item.market_stats?.change_percent ?: "--"
+
                 Text(
-                    text = "قیمت زمان تحلیل: ${item.market_stats?.current_price}",
+                    text = "قیمت: $price",
                     color = WhiteText,
                     fontSize = 14.sp
                 )
+
                 Text(
-                    text = "تغییر: ${item.market_stats?.change_percent}",
+                    text = "تغییر: $change",
                     color = adviceColor,
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 14.sp,
+                    fontSize = 14.sp
                 )
             }
 
-            // Chart mini line
             if (item.chart_points.isNotEmpty()) {
-                MiniLineChart(
-                    points = item.chart_points,
-                    lineColor = GoldText
-                )
+                MiniLineChart(item.chart_points)
             }
-
         }
     }
 }
 
 @Composable
-fun MiniLineChart(
-    points: List<Long>,
-    lineColor: Color = GoldText
-) {
+fun MiniLineChart(points: List<Long>) {
+
     val max = points.maxOrNull()?.toFloat() ?: 1f
     val min = points.minOrNull()?.toFloat() ?: 0f
     val diff = max - min
 
-    androidx.compose.foundation.Canvas(
+    Canvas(
         modifier = Modifier
             .fillMaxWidth()
             .height(80.dp)
-            .clip(RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(10.dp))
             .background(Color(0xFF262523))
     ) {
+
         if (points.size < 2) return@Canvas
 
         val stepX = size.width / (points.size - 1)
         val scaleY = if (diff != 0f) size.height / diff else 1f
 
         for (i in 0 until points.size - 1) {
+
             val startX = i * stepX
             val startY = size.height - (points[i] - min) * scaleY
+
             val stopX = (i + 1) * stepX
             val stopY = size.height - (points[i + 1] - min) * scaleY
 
             drawLine(
-                color = lineColor,
-                start = androidx.compose.ui.geometry.Offset(startX, startY),
-                end = androidx.compose.ui.geometry.Offset(stopX, stopY),
+                color = GoldText,
+                start = Offset(startX, startY),
+                end = Offset(stopX, stopY),
                 strokeWidth = 4f
             )
+        }
+    }
+}
+
+@Composable
+fun LoadingView() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator(color = GoldText)
+    }
+}
+
+@Composable
+fun ErrorView(onRetry: () -> Unit) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+
+            Text(
+                text = stringResource(R.string.error_fetch_data),
+                color = Color.Red,
+                fontSize = 16.sp
+            )
+
+            Spacer(Modifier.height(10.dp))
+
+            Button(
+                onClick = onRetry,
+                colors = ButtonDefaults.buttonColors(containerColor = GoldText)
+            ) {
+                Text(text = stringResource(R.string.error_text_btn), color = Color.Black)
+            }
         }
     }
 }
@@ -536,20 +496,19 @@ private fun CategoryButton(
     modifier: Modifier,
     onClick: () -> Unit
 ) {
+
     val textColor = if (isSelected) GoldText else Color.Gray
 
     TextButton(
         onClick = onClick,
-        modifier = modifier,
+        modifier = modifier
     ) {
         Text(
             text = text,
-            fontSize = 18.sp,
-            color = textColor,
+            fontSize = 17.sp,
             fontWeight = FontWeight.Bold,
-            style = TextStyle(
-                textAlign = TextAlign.Center
-            ),
+            color = textColor,
+            style = TextStyle(textAlign = TextAlign.Center),
             modifier = Modifier.fillMaxWidth()
         )
     }
